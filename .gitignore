@@ -28,7 +28,7 @@
 *.bcf
 *.run.xml
 
-# 编译生成的 PDF（建议不提交，通过 CI 自动生成）
+# 编译生成的 PDF
 *.pdf
 
 # VSCode 配置文件
