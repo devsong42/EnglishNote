@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y qpdf
           qpdf --encrypt "" "${{ secrets.PDF_OWNER_PASSWORD }}" 256 \
-                --modify=none --annotate=y --form=n --extract=n -- \
+                --modify=none --annotate=y --extract=n -- \
                 build/book.pdf build/book-encrypted.pdf
           mv build/book-encrypted.pdf build/book.pdf
         env:
