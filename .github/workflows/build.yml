@@ -18,11 +18,11 @@ jobs:
           latexmk_use_xelatex: true
           args: "-pdfxe -outdir=build -auxdir=build"
 
-      - name: Upload PDF artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: book-pdf
-          path: build/book.pdf
+      # - name: Upload PDF artifact
+      #   uses: actions/upload-artifact@v7
+      #   with:
+      #     name: book-pdf
+      #     path: build/book.pdf
 
       - name: Generate release tag
         id: tag
@@ -52,7 +52,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y qpdf
           qpdf --encrypt "" "${{ secrets.PDF_OWNER_PASSWORD }}" 256 \
-               --modify=none --copy=none -- \
+               --modify=none -- \
               build/book.pdf build/book-encrypted.pdf
           mv build/book-encrypted.pdf build/book.pdf
         env:
