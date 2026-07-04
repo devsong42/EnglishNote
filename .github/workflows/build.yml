@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y qpdf
           qpdf --encrypt "" "${{ secrets.PDF_OWNER_PASSWORD }}" 256 \
-                --modify=none --annotate=y --extract=n -- \
+                --modify=none --annotate=y --form=n --extract=n -- \
                 build/book.pdf build/book-encrypted.pdf
           mv build/book-encrypted.pdf build/book.pdf
         env:
@@ -49,7 +49,6 @@ jobs:
           files: build/book.pdf
           body: |
             📚 自动构建于提交 `${{ github.sha }}`
-            ${{ steps.changelog.outputs.CHANGES }}
             - 最新源码: https://github.com/${{ github.repository }}/tree/${{ github.sha }}
             - 更改日志: https://github.com/${{ github.repository }}/commits/main
           draft: false
