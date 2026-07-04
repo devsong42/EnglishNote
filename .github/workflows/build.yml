@@ -18,11 +18,24 @@ jobs:
           latexmk_use_xelatex: true
           args: "-pdfxe -outdir=build -auxdir=build"
 
-      # - name: Upload PDF artifact
-      #   uses: actions/upload-artifact@v7
-      #   with:
-      #     name: book-pdf
-      #     path: build/book.pdf
+      - name: Fix build directory permissions
+        run: sudo chmod -R 777 build
+
+      - name: Install qpdf and encrypt PDF
+        run: |
+          sudo apt-get update && sudo apt-get install -y qpdf
+          qpdf --encrypt "" "${{ secrets.PDF_OWNER_PASSWORD }}" 256 \
+                --modify=none --extract=none -- \
+                build/book.pdf build/book-encrypted.pdf
+          mv build/book-encrypted.pdf build/book.pdf
+        env:
+          PDF_OWNER_PASSWORD: ${{ secrets.PDF_OWNER_PASSWORD }}
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: book-pdf
+          path: build/book.pdf
 
       - name: Generate release tag
         id: tag
@@ -47,13 +60,3 @@ jobs:
         run: |
           git tag -f latest
           git push origin latest --force
-
-      - name: Encrypt PDF (disable modification)
-        run: |
-          sudo apt-get update && sudo apt-get install -y qpdf
-          qpdf --encrypt "" "${{ secrets.PDF_OWNER_PASSWORD }}" 256 \
-               --modify=none -- \
-              build/book.pdf build/book-encrypted.pdf
-          mv build/book-encrypted.pdf build/book.pdf
-        env:
-          PDF_OWNER_PASSWORD: ${{ secrets.PDF_OWNER_PASSWORD }}
