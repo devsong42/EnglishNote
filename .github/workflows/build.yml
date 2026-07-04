@@ -2,35 +2,58 @@ name: Build and Release PDF
 on:
   push:
     branches: [ main ]
-    tags: [ 'v*' ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v7
 
       - name: Compile LaTeX document
-        uses: xu-cheng/latex-action@v3
+        uses: xu-cheng/latex-action@v4
         with:
           root_file: book.tex
           latexmk_use_xelatex: true
           args: "-pdfxe -outdir=build -auxdir=build"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v7
         with:
-          name: book
+          name: book-pdf
           path: build/book.pdf
 
-      - name: Release PDF
-        uses: softprops/action-gh-release@v2
+      - name: Generate release tag
+        id: tag
+        run: echo "TAG=$(date -u +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v3
         with:
-          name: "Latest Build"
-          tag_name: "latest"
+          tag_name: ${{ steps.tag.outputs.TAG }}
+          name: Build ${{ steps.tag.outputs.TAG }}
           files: build/book.pdf
-          fail_on_unmatched_files: true
+          body: |
+            📚 自动构建于提交 `${{ github.sha }}`
+            - 最新源码: https://github.com/${{ github.repository }}/tree/${{ github.sha }}
+            - 更改日志: https://github.com/${{ github.repository }}/commits/main
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update 'latest' tag
+        run: |
+          git tag -f latest
+          git push origin latest --force
+
+      - name: Encrypt PDF (disable modification)
+        run: |
+          sudo apt-get update && sudo apt-get install -y qpdf
+          qpdf --encrypt "" "${{ secrets.PDF_OWNER_PASSWORD }}" 256 \
+               --modify=n --print=n --copy=n -- \
+               build/book.pdf build/book-encrypted.pdf
+          mv build/book-encrypted.pdf build/book.pdf
+        env:
+          PDF_OWNER_PASSWORD: ${{ secrets.PDF_OWNER_PASSWORD }}
