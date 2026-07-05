@@ -47,10 +47,7 @@ jobs:
           tag_name: ${{ steps.tag.outputs.TAG }}
           name: Build ${{ steps.tag.outputs.TAG }}
           files: build/book.pdf
-          body: |
-            📚 自动构建于提交 `${{ github.sha }}`
-            - 最新源码: https://github.com/${{ github.repository }}/tree/${{ github.sha }}
-            - 更改日志: https://github.com/${{ github.repository }}/commits/main
+          generate_release_notes: true
           draft: false
           prerelease: false
         env:
