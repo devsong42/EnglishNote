@@ -61,6 +61,7 @@ jobs:
           name: Build ${{ steps.tag.outputs.TAG }}
           files: build/book.pdf
           body: |
+            ${{ steps.time.outputs.NOW }}
             ${{ steps.changelog.outputs.CHANGELOG }}
           draft: false
           prerelease: false
